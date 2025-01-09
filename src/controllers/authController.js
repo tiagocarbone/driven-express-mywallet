@@ -5,9 +5,7 @@ import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 dotenv.config();
 
-export async function getFunction(req, res) {
-    res.send("oieeee")
-}
+
 
 export async function signUp(req, res) {
     const user = req.body;
