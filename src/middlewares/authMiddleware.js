@@ -10,7 +10,6 @@ export async function validarToken(req, res, next){
     const { authorization } = req.headers;
     const token = authorization?.replace("Bearer", "").trim();
     if(!token) return res.sendStatus(401);
-    console.log("passou")
     jwt.verify(token, process.env.JWT_SECRET, async (error, decoded) => {
         if(error) res.sendStatus(401);
 
