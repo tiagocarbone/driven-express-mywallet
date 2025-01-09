@@ -20,22 +20,21 @@ export async function signUp(req, res) {
 
 }
 
-
 export async function signIn(req, res) {
-
     const usuario = req.body;
 
-    const usuarioCadastrado = await db.collection('users').findOne({email :usuario.email});
-    if(!usuarioCadastrado) return res.sendStatus(404)
+    const usuarioCadastrado = await db.collection('users').findOne({ email: usuario.email });
+    if (!usuarioCadastrado) return res.sendStatus(404);
 
-    if (usuarioCadastrado && bcrypt.compareSync(usuario.password, usuarioCadastrado.password)) {
+    if (bcrypt.compareSync(usuario.password, usuarioCadastrado.password)) {
         const token = jwt.sign(
-            { userId: usuarioCadastrado._id }, process.env.JWT_SECRET,
-            { expiresIn: 86400 });
+            { userId: usuarioCadastrado._id.toString() }, 
+            process.env.JWT_SECRET,
+            { expiresIn: 86400 }
+        );
 
-        return res.send(token).status(201)
+        return res.status(201).send(token);
     } else {
         res.sendStatus(401);
     }
-
 }

@@ -4,19 +4,36 @@ dotenv.config();
 
 
 export async function getTransaction(req, res){
-    const transactions = await db.collection("transactions").find().toArray();
-    res.send(transactions.reverse())
+
+    let pagina = req.query.page;
+    if(!pagina) pagina = 1
+    if (pagina <= 0) return res.sendStatus(400);
+    
+    const limite = 2;
+    const inicio = (pagina - 1) * limite;
+
+    const transactions = await db.collection("transactions")
+    .find()
+    .sort({_id: -1})
+    .skip(inicio)
+    .limit(limite)
+    .toArray();
+    
+    res.send(transactions)
 }
 
 export async function postTransaction(req, res){
     const newTransaction = req.body;
 
-    await db.collection("transactions").insertOne(newTransaction);
+    await db.collection("transactions").insertOne({
+        ...newTransaction,
+        user:res.locals.user.email
+    });
 
     res.sendStatus(201)
 
 }
 
 export async function putTransaction(req, res){
-    res.send("put")
+    const newTransatcion = req.body
 }
