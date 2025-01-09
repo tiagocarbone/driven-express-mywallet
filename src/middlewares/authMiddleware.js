@@ -11,6 +11,7 @@ export async function validarToken(req, res, next) {
 
     if (!token) return res.sendStatus(401);
 
+    try{
     jwt.verify(token, process.env.JWT_SECRET, async (error, decoded) => {
         if (error) {
             console.error("Token Verification Error:", error);
@@ -28,6 +29,9 @@ export async function validarToken(req, res, next) {
         res.locals.user = user;
         next();
     });
+    }catch(error){
+        console.log(error)
+    }
 }
 
 

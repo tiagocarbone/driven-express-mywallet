@@ -1,39 +1,103 @@
+import { ObjectId } from 'mongodb';
 import db from '../db/db.js';
+import dayjs from 'dayjs';
 import dotenv from 'dotenv';
 dotenv.config();
 
+export async function getTransaction(req, res) {
+    try {
+        let pagina = req.query.page;
+        if (!pagina) pagina = 1;
+        if (pagina <= 0) return res.sendStatus(400);
 
-export async function getTransaction(req, res){
+        const limite = 10;
+        const inicio = (pagina - 1) * limite;
+        console.log(res.locals.user._id);
 
-    let pagina = req.query.page;
-    if(!pagina) pagina = 1
-    if (pagina <= 0) return res.sendStatus(400);
-    
-    const limite = 2;
-    const inicio = (pagina - 1) * limite;
+        const transactions = await db.collection("transactions")
+            .find({ userId: res.locals.user._id })
+            .sort({ _id: -1 })
+            .skip(inicio)
+            .limit(limite)
+            .toArray();
 
-    const transactions = await db.collection("transactions")
-    .find()
-    .sort({_id: -1})
-    .skip(inicio)
-    .limit(limite)
-    .toArray();
-    
-    res.send(transactions)
+        res.send(transactions);
+    } catch (error) {
+        console.log(error)
+        res.status(500);
+    }
 }
 
-export async function postTransaction(req, res){
-    const newTransaction = req.body;
+export async function postTransaction(req, res) {
+    try {
+        const newTransaction = req.body;
 
-    await db.collection("transactions").insertOne({
-        ...newTransaction,
-        user:res.locals.user.email
-    });
+        const dataAtual = dayjs().format('DD/MM/YYYY');
+        newTransaction.date = dataAtual;
 
-    res.sendStatus(201)
+        await db.collection("transactions").insertOne({
+            ...newTransaction,
+            userId: res.locals.user._id,
+        });
 
+        console.log(res.locals.user._id);
+        res.sendStatus(201);
+    } catch (error) {
+        console.log(error)
+        res.status(500)
+    }
 }
 
-export async function putTransaction(req, res){
-    const newTransatcion = req.body
+export async function putTransaction(req, res) {
+    try {
+        const newTransaction = req.body;
+        const id = req.params.id;
+        const userId = res.locals.user._id;
+
+        const transaction = await db.collection("transactions").findOne({
+            _id: new ObjectId(id),
+            userId: new ObjectId(userId),
+        });
+
+        if (!transaction) {
+            return res.status(401).send("Usuário não autorizado a atualizar esta transação.");
+        }
+
+        // Atualiza a transação caso a verificação passe
+        await db.collection("transactions").updateOne(
+            { _id: new ObjectId(id) },
+            { $set: newTransaction }
+        );
+
+        res.sendStatus(200);
+    } catch (error) {
+        console.error(error);
+        res.sendStatus(500);
+    }
+}
+
+
+export async function deleteTransaction(req, res) {
+    try {
+        const idTransaction = req.params.id;
+        const userId = res.locals.user._id;
+
+        const transaction = await db.collection("transactions").findOne({
+            _id: new ObjectId(idTransaction),
+            userId: new ObjectId(userId),
+        });
+
+        if (!transaction) {
+            return res.status(401).send("Usuário não autorizado a deletar esta transação.");
+        }
+
+        const deletedTransaction = await db.collection("transactions").deleteOne({
+            _id: new ObjectId(idTransaction),
+        });
+
+        res.sendStatus(200);
+    } catch (error) {
+        console.log(error)
+        res.status(500)
+    }
 }
