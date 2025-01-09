@@ -23,7 +23,7 @@ export async function getTransaction(req, res) {
 
         res.send(transactions);
     } catch (error) {
-        console.log(error)
+        console.log(error.message)
         res.status(500);
     }
 }
@@ -43,7 +43,7 @@ export async function postTransaction(req, res) {
         console.log(res.locals.user._id);
         res.sendStatus(201);
     } catch (error) {
-        console.log(error)
+        console.log(error.message)
         res.status(500)
     }
 }
@@ -60,7 +60,7 @@ export async function putTransaction(req, res) {
         });
 
         if (!transaction) {
-            return res.status(401).send("Usuário não autorizado a atualizar esta transação.");
+            return res.status(401)
         }
 
         // Atualiza a transação caso a verificação passe
@@ -88,7 +88,7 @@ export async function deleteTransaction(req, res) {
         });
 
         if (!transaction) {
-            return res.status(401).send("Usuário não autorizado a deletar esta transação.");
+            return res.status(401)
         }
 
         const deletedTransaction = await db.collection("transactions").deleteOne({
@@ -97,7 +97,7 @@ export async function deleteTransaction(req, res) {
 
         res.sendStatus(200);
     } catch (error) {
-        console.log(error)
+        console.log(error.message)
         res.status(500)
     }
 }
