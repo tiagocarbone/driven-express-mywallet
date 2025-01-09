@@ -63,7 +63,7 @@ export async function putTransaction(req, res) {
             return res.status(401)
         }
 
-        // Atualiza a transação caso a verificação passe
+        
         await db.collection("transactions").updateOne(
             { _id: new ObjectId(id) },
             { $set: newTransaction }
